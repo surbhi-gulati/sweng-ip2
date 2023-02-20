@@ -23,6 +23,7 @@ import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
 import PosterSessionAreaController from './PosterSessionAreaController';
+import ConversationArea from '../components/Town/interactables/ConversationArea';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 
@@ -135,7 +136,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   private _playersInternal: PlayerController[] = [];
 
   /**
-   * The current list of conversation areas in the twon. Adding or removing conversation areas might
+   * The current list of conversation areas in the town. Adding or removing conversation areas might
    * replace the array with a new one; clients should take note not to retain stale references.
    */
   private _conversationAreasInternal: ConversationAreaController[] = [];
@@ -430,7 +431,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * events (@see ViewingAreaController and @see ConversationAreaController and @see PosterSessionAreaController)
      */
     this._socket.on('interactableUpdate', interactable => {
-      // TODO
+      if (interactable instanceof ViewingArea) {
+        this.emitViewingAreaUpdate(this.getViewingAreaController(interactable));
+      } 
+      else if (interactable instanceof PosterSesssionArea) {
+        this.emitPosterSessionAreaUpdate(this.getPosterSessionAreaController(interactable));
+      }
+      else if (interactable instanceof ConversationArea) {
+        this.emit('conversationAreasChanged', this._conversationAreas);
+      }
     });
   }
 
@@ -658,7 +667,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   public async getPosterSessionAreaImageContents(
     posterSessionArea: PosterSessionAreaController,
   ): Promise<string> {
-    throw new Error('Unimplemented');
+    return posterSessionArea.imageContents || '';
   }
 
   /**
@@ -669,7 +678,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   public async incrementPosterSessionAreaStars(
     posterSessionArea: PosterSessionAreaController,
   ): Promise<number> {
-    throw new Error('Unimplemented');
+    posterSessionArea.emit('posterStarChange', posterSessionArea.stars + 1);
+    return posterSessionArea.stars;
   }
 
   /**

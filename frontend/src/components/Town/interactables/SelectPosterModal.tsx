@@ -70,7 +70,36 @@ export default function SelectPosterModal({
   // found, then don't create the poster.
   // Toast some errors if the poster could not be created.
   const createPoster = useCallback(async () => {
-    // TODO
+    if (title && posterFileContents && posterSessionAreController) {
+      const request: PosterSessionAreaModel = {
+        id: posterSessionAreController.id,
+        stars: 0,
+        imageContents: posterFileContents,
+        title: title
+      };
+      try {
+        await coveyTownController.createPosterSessionArea(request);
+        toast({
+          title: 'Poster created!',
+          status: 'success',
+        });
+        coveyTownController.unPause();
+      } catch (err) {
+        if (err instanceof Error) {
+          toast({
+            title: 'Unable to set given title and image',
+            description: err.toString(),
+            status: 'error',
+          });
+        } else {
+          console.trace(err);
+          toast({
+            title: 'Unexpected Error',
+            status: 'error',
+          });
+        }
+      }
+    }
   }, [
     title,
     posterFileContents,
