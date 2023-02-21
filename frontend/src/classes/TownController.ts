@@ -23,7 +23,7 @@ import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
 import PosterSessionAreaController from './PosterSessionAreaController';
-import ConversationArea from '../components/Town/interactables/ConversationArea';
+import { nanoid } from 'nanoid';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 
@@ -431,14 +431,29 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * events (@see ViewingAreaController and @see ConversationAreaController and @see PosterSessionAreaController)
      */
     this._socket.on('interactableUpdate', interactable => {
-      if (interactable instanceof ViewingArea) {
-        this.emitViewingAreaUpdate(this.getViewingAreaController(interactable));
-      } 
-      else if (interactable instanceof PosterSesssionArea) {
-        this.emitPosterSessionAreaUpdate(this.getPosterSessionAreaController(interactable));
-      }
-      else if (interactable instanceof ConversationArea) {
-        this.emit('conversationAreasChanged', this._conversationAreas);
+      if (isViewingArea(interactable)) {
+        const areaToUpdate = this._viewingAreas.find(
+          viewingArea => viewingArea.id === interactable.id,
+        );
+        areaToUpdate?.updateFrom(interactable);
+      } else if (isPosterSessionArea(interactable)) {
+        const areaToUpdate = this._posterSessionAreas.find(
+          posterSessionArea => posterSessionArea.id === interactable.id,
+        );
+        areaToUpdate?.updateFrom(interactable);
+      } else {
+        const areaToUpdate = this._conversationAreasInternal.find(
+          conversationArea => conversationArea.id === interactable.id,
+        );
+        if (areaToUpdate) {
+          const preUpdateEmpty = areaToUpdate.isEmpty();
+          areaToUpdate.occupants = this._playersByIDs(interactable.occupantsByID);
+          areaToUpdate.topic = interactable.topic;
+          const postUpdateEmpty = areaToUpdate.isEmpty();
+          if (preUpdateEmpty !== postUpdateEmpty) {
+            this.emit('conversationAreasChanged', this._conversationAreasInternal);
+          }
+        }
       }
     });
   }
@@ -667,7 +682,24 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   public async getPosterSessionAreaImageContents(
     posterSessionArea: PosterSessionAreaController,
   ): Promise<string> {
-    return posterSessionArea.imageContents || '';
+    const existingController = this._posterSessionAreas.find(
+      eachExistingArea => eachExistingArea.id === posterSessionArea.imageContents,
+    );
+    if (existingController) {
+      return existingController.imageContents || '';
+    } else {
+      const newController = new PosterSessionAreaController({
+        id: nanoid(),
+        stars: 0,
+        imageContents: undefined,
+        title: '',
+      });
+      this._posterSessionAreas.push(newController);
+      return newController.imageContents || '';
+      // new Promise((resolve) => {
+      //   resolve(4);
+      // }
+    }
   }
 
   /**
@@ -678,8 +710,22 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   public async incrementPosterSessionAreaStars(
     posterSessionArea: PosterSessionAreaController,
   ): Promise<number> {
-    posterSessionArea.emit('posterStarChange', posterSessionArea.stars + 1);
-    return posterSessionArea.stars;
+    const existingController = this._posterSessionAreas.find(
+      eachExistingArea => eachExistingArea.id === posterSessionArea.imageContents,
+    );
+    if (existingController) {
+      existingController?.emit('posterStarChange', existingController.stars + 1);
+      return existingController.stars;
+    } else {
+      const newController = new PosterSessionAreaController({
+        id: nanoid(),
+        stars: 0,
+        imageContents: undefined,
+        title: '',
+      });
+      newController.emit('posterStarChange', newController.stars + 1);
+      return newController.stars;
+    }
   }
 
   /**

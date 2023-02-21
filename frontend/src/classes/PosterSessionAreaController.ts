@@ -94,7 +94,7 @@ export default class PosterSessionAreaController extends (EventEmitter as new ()
     if (this._model.imageContents !== imageContents) {
       this._model.imageContents = imageContents;
       this.emit('posterImageContentsChange', imageContents);
-    }  
+    }
   }
 
   /**
@@ -113,7 +113,7 @@ export default class PosterSessionAreaController extends (EventEmitter as new ()
     if (this._model.stars !== stars) {
       this._model.stars = stars;
       this.emit('posterStarChange', stars);
-    }  
+    }
   }
 
   /**

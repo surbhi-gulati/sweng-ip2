@@ -1,5 +1,6 @@
 import TownController from '../../classes/TownController';
 import TownGameScene from './TownGameScene';
+import Phaser from 'phaser';
 
 //TODO is there not some way to figure this out from generic types/supertypes?
 export type KnownInteractableTypes =

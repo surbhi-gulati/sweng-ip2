@@ -75,7 +75,7 @@ export default function SelectPosterModal({
         id: posterSessionAreController.id,
         stars: 0,
         imageContents: posterFileContents,
-        title: title
+        title: title,
       };
       try {
         await coveyTownController.createPosterSessionArea(request);
@@ -103,10 +103,10 @@ export default function SelectPosterModal({
   }, [
     title,
     posterFileContents,
-    setTitle,
+    // setTitle,
     coveyTownController,
     posterSessionAreController,
-    closeModal,
+    // closeModal,
     toast,
   ]);
 

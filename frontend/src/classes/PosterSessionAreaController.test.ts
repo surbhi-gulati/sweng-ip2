@@ -81,7 +81,7 @@ describe('PosterSessionAreaController', () => {
       expect(mockListeners.posterStarChange).not.toBeCalled();
     });
   });
-  describe('viewingAreaModel', () => {
+  describe('posterSessionAreaModel', () => {
     it('Carries through all of the properties', () => {
       const model = testArea.posterSessionAreaModel();
       expect(model).toEqual(testAreaModel);
